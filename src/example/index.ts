@@ -4,7 +4,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const openApiDoc = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'openapi.json'), 'utf8'));
+const exampleFile = process.env.OPENAPI_EXAMPLE_FILE ?? 'openapi.json';
+const examplePath = path.join(path.dirname(fileURLToPath(import.meta.url)), exampleFile);
+const openApiDoc = JSON.parse(fs.readFileSync(examplePath, 'utf8'));
 
 const converter = new OpenApiMCPSeverConverter(openApiDoc, { timeout: 100000 });
 const server = converter.getServer();
