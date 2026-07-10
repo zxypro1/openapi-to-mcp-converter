@@ -1,0 +1,328 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Xquik API",
+    "version": "1.0",
+    "description": "Compact OpenAPI 3.1 sample for X social data lookups."
+  },
+  "servers": [
+    {
+      "url": "https://xquik.com"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    },
+    {
+      "oauthBearer": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tweets"
+    },
+    {
+      "name": "Users"
+    },
+    {
+      "name": "Trends"
+    }
+  ],
+  "paths": {
+    "/api/v1/x/tweets/search": {
+      "get": {
+        "operationId": "searchTweets",
+        "summary": "Search X posts by query, post ID, status URL, or account date window",
+        "tags": [
+          "Tweets"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Search query.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "queryType",
+            "in": "query",
+            "description": "Sort order.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Latest",
+                "Top"
+              ],
+              "default": "Latest"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Pagination cursor from the previous response.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum posts to return.",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedTweets"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          }
+        }
+      }
+    },
+    "/api/v1/x/users/{id}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get an X user profile by username or user ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "X username without @ or numeric user ID.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/trends": {
+      "get": {
+        "operationId": "getTrends",
+        "summary": "Get trending hashtags and topics by region",
+        "tags": [
+          "Trends"
+        ],
+        "parameters": [
+          {
+            "name": "woeid",
+            "in": "query",
+            "description": "Region WOEID code.",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "description": "Number of trending topics returned.",
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trending topics.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      },
+      "oauthBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "PaginatedTweets": {
+        "type": "object",
+        "required": [
+          "tweets"
+        ],
+        "properties": {
+          "tweets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tweet"
+            }
+          },
+          "has_next_page": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        }
+      },
+      "Tweet": {
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/UserProfile"
+          }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "required": [
+          "id",
+          "username"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "followers": {
+            "type": "integer"
+          }
+        }
+      },
+      "TrendsResponse": {
+        "type": "object",
+        "required": [
+          "trends",
+          "total",
+          "woeid"
+        ],
+        "properties": {
+          "trends": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "rank": {
+                  "type": "integer"
+                },
+                "query": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "woeid": {
+            "type": "integer"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthenticated": {
+        "description": "Authentication required.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

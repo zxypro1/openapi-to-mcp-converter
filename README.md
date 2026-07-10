@@ -155,6 +155,10 @@ app.listen(3000);
 npm run test  # Execute sample test cases
 ```
 
+The example folder also includes `xquik-openapi.json`, a compact OpenAPI 3.1
+sample that covers header API key auth, bearer auth, path parameters, query
+parameters, and cursor pagination.
+
 ## Development Guide
 
 ### Project Structure
